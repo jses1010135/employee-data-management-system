@@ -1,4 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
+using System.Data;
+using Microsoft.Data.Sqlite;
 
 namespace employee_data_management_system.DAL
 {
@@ -9,38 +11,42 @@ namespace employee_data_management_system.DAL
         private readonly string primaryConnStr = "Server=localhost\\SQLEXPRESS;Database=Northwind;User Id=sa;Password=sa123;TrustServerCertificate=true;";
 
         // 2. 備用連線：本機 bin 資料夾 
-        private readonly string fallbackConnStr = "Server=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\\Northwnd.mdf;Integrated Security=True;";
+        //private readonly string fallbackConnStr = "Server=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\\Northwnd.mdf;Integrated Security=True;";
 
-        private static string _activeConnStr = null;
+        private static bool? _useSQLite = null;
+        private readonly string sqliteConnStr = "Data Source=Northwind.db";
 
-        protected SqlConnection GetConnection()
+        public IDbConnection GetConnection()
         {
-
-            // 只有第一次呼叫 (或是還不知道誰活著) 的時候，才做測試     
-            if (_activeConnStr == null)
+            // 1. 如果之前已經確定要使用 SQLite
+            if (_useSQLite == true)
             {
-                try
-                {
-                    // 嘗試去敲主資料庫的門
-                    using (SqlConnection testConn = new SqlConnection(primaryConnStr))
-                    {
-                        testConn.Open();
-                    }
-
-                    // ??? 如果程式順利走到這裡（沒有當機跳走），代表主連線是通的！
-                    _activeConnStr = primaryConnStr;
-
-                }
-                catch
-                {
-                    // ??? 如果發生錯誤來到這裡，代表主連線掛了！
-                    _activeConnStr = fallbackConnStr;
-
-                }
+                return new SqliteConnection(sqliteConnStr);
+            }
+            // 2. 如果之前已經測試過 SQL Server 是活的，就直接用，不用再重複敲門
+            else if (_useSQLite == false)
+            {
+                return new SqlConnection(primaryConnStr);
             }
 
-            // 回傳最終決定好的那條連線
-            return new SqlConnection(_activeConnStr);
+            // 3. 程式剛啟動，初次執行：嘗試連線正式的 SQL Server
+            try
+            {
+                using (SqlConnection testConn = new SqlConnection(primaryConnStr))
+                {
+                    testConn.Open(); // 嘗試敲門！
+                } // 離開 using 區塊會自動安全關聯 (Close)
+
+                // 門有開代表正常，記錄下來下次就不必重複測了
+                _useSQLite = false;
+
+                return new SqlConnection(primaryConnStr);
+            }
+            catch (Exception) // 將 SqlException 放寬為 Exception，確保各種無法連線的狀況都能成功降級到 SQLite
+            {
+                _useSQLite = true;
+                return new SqliteConnection(sqliteConnStr);
+            }
         }
     }
 }
