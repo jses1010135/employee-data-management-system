@@ -36,14 +36,15 @@ namespace employee_data_management_system
             {
                 currentIndex = 0;
                 DisplayEmployee(currentIndex);
+
+                // 1. 取得目前畫面上正在顯示的這位員工
+                Employee currentEmp = employees[currentIndex];
+
+                // 2. 透過 BLL 撈出他的責任區清單，並綁定給下方的表格
+                var myTerritoryList = employeeBLL.GetEmployeeTerritories(currentEmp);
+                dgvTerritories.DataSource = new BindingList<Territory>(myTerritoryList);
             }
 
-            // 1. 取得目前畫面上正在顯示的這位員工
-            Employee currentEmp = employees[currentIndex];
-
-            // 2. 透過 BLL 撈出他的責任區清單，並綁定給下方的表格
-            var myTerritoryList = employeeBLL.GetEmployeeTerritories(currentEmp);
-            dgvTerritories.DataSource = new BindingList<Territory>(myTerritoryList);
             // === 欄位替換手術開始 ===
 
             // 1. 去資料庫撈出「全公司所有的責任區」，當作下拉選單的選項
@@ -74,7 +75,7 @@ namespace employee_data_management_system
 
             // === 欄位替換手術結束 ===
 
-          
+
 
             _isInitializing = false; // 2. 狀態解除：資料綁定完畢
         }
@@ -195,7 +196,7 @@ namespace employee_data_management_system
                     DisplayEmployee(currentIndex);
 
                     Employee currentEmp = employees[currentIndex];
-                    var myTerritoryList = employeeBLL.GetEmployeeTerritories(currentEmp); 
+                    var myTerritoryList = employeeBLL.GetEmployeeTerritories(currentEmp);
                     dgvTerritories.DataSource = new BindingList<Territory>(myTerritoryList);
                     comboCol.ReadOnly = false;
                 }
@@ -207,14 +208,16 @@ namespace employee_data_management_system
             else
             {
                 // === 【修改 (Update) 邏輯】 ===
+                if (employees == null || employees.Count == 0) return; // 避免目前沒有員工的狀況
                 Employee currentEmp = employees[currentIndex];
                 currentEmp.FirstName = txtFirstName.Text.Trim();
                 currentEmp.LastName = txtLastName.Text.Trim();
-                // 1. 從表格中把資料拿出來，並明確告訴 C# 說：「這是一包 BindingList<Territory>」
-                BindingList<Territory> currentBindingList = (BindingList<Territory>)dgvTerritories.DataSource;
 
-                // 2. 利用 .ToList() 將它轉換回 BLL 需要的標準 List
-                List<Territory> territoriesToSave = currentBindingList.ToList();
+                // 1. 從表格中把資料拿出來，並明確告訴 C# 說：「這是一包 BindingList<Territory>」 (使用 as 安全轉型)
+                BindingList<Territory> currentBindingList = dgvTerritories.DataSource as BindingList<Territory>;
+
+                // 2. 利用 .ToList() 將它轉換回 BLL 需要的標準 List (加上 null 防呆)
+                List<Territory> territoriesToSave = currentBindingList != null ? currentBindingList.ToList() : new List<Territory>();
 
                 // 加入檢測：確認清單中是否有重複的責任區 (TerritoryId)
                 bool hasDuplicates = territoriesToSave.GroupBy(t => t.TerritoryId).Any(g => g.Count() > 1);
@@ -245,7 +248,7 @@ namespace employee_data_management_system
             }
         }
 
-       
+
 
         private void pictureBoxEmployee_Click(object sender, EventArgs e)
         {

@@ -12,12 +12,13 @@ namespace employee_data_management_system.DAL
 
             string query = "SELECT EmployeeID, FirstName, LastName, Photo FROM Employees";
 
-            using (SqlConnection conn = GetConnection())
+            using (IDbConnection conn = GetConnection())
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (IDbCommand cmd = conn.CreateCommand())
                 {
+                    cmd.CommandText = query;
                     conn.Open();
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    using (IDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
@@ -45,19 +46,32 @@ namespace employee_data_management_system.DAL
             // 使用 @ 符號定義參數
             string query = "UPDATE Employees SET Photo = @Photo, FirstName = @FirstName, LastName = @LastName WHERE EmployeeID = @EmployeeID";
 
-            using (SqlConnection conn = GetConnection())
+            using (IDbConnection conn = GetConnection())
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (IDbCommand cmd = conn.CreateCommand())
                 {
+                    cmd.CommandText = query;
                     // 綁定員工 ID
-                    cmd.Parameters.AddWithValue("@EmployeeID", emp.EmployeeID);
-                    cmd.Parameters.AddWithValue("@FirstName", emp.FirstName);
-                    cmd.Parameters.AddWithValue("@LastName", emp.LastName);
+                    IDbDataParameter paramEmpId = cmd.CreateParameter();
+                    paramEmpId.ParameterName = "@EmployeeID";
+                    paramEmpId.Value = emp.EmployeeID;
+                    cmd.Parameters.Add(paramEmpId);
+
+                    IDbDataParameter paramFirstName = cmd.CreateParameter();
+                    paramFirstName.ParameterName = "@FirstName";
+                    paramFirstName.Value = emp.FirstName;
+                    cmd.Parameters.Add(paramFirstName);
+
+                    IDbDataParameter paramLastName = cmd.CreateParameter();
+                    paramLastName.ParameterName = "@LastName";
+                    paramLastName.Value = emp.LastName;
+                    cmd.Parameters.Add(paramLastName);
                     
                     // 綁定照片資料，並處理照片可能為 null 的情況
                     // --- 照片參數防呆處理 ---
-                    // 明確宣告這是一個 Image (二進位) 欄位，不要讓 C# 亂猜
-                    SqlParameter photoParam = new SqlParameter("@Photo", SqlDbType.Image);
+                    IDbDataParameter photoParam = cmd.CreateParameter();
+                    photoParam.ParameterName = "@Photo";
+                    photoParam.DbType = DbType.Binary;
 
                     // 判斷：如果有照片就給照片，沒有照片就給資料庫專用的空值 (DBNull.Value)
                     if (emp.Photo != null)
@@ -78,19 +92,29 @@ namespace employee_data_management_system.DAL
                     {
                         // 準備安全新增的 SQL 語法
                         string insertTerritoryQuery = @"
-            IF NOT EXISTS (SELECT 1 FROM EmployeeTerritories WHERE EmployeeID = @EmployeeID AND TerritoryID = @TerritoryID)
-            BEGIN
-                INSERT INTO EmployeeTerritories (EmployeeID, TerritoryID) VALUES (@EmployeeID, @TerritoryID)
-            END";
+    INSERT INTO EmployeeTerritories (EmployeeID, TerritoryID) 
+    SELECT @EmployeeID, @TerritoryID 
+    WHERE NOT EXISTS (
+        SELECT 1 FROM EmployeeTerritories 
+        WHERE EmployeeID = @EmployeeID AND TerritoryID = @TerritoryID
+    )";
 
                         // 走訪畫面傳進來的每一個責任區
                         foreach (var terr in territories)
                         {
-                            using (SqlCommand insertCmd = new SqlCommand(insertTerritoryQuery, conn))
+                            using (IDbCommand insertCmd = conn.CreateCommand())
                             {
-                                // ??? 請在這裡補上兩行程式碼，將資料綁定到 @EmployeeID 與 @TerritoryID 參數上
-                                insertCmd.Parameters.AddWithValue("@EmployeeID", emp.EmployeeID);
-                                insertCmd.Parameters.AddWithValue("@TerritoryID", terr.TerritoryId);
+                                insertCmd.CommandText = insertTerritoryQuery;
+
+                                IDbDataParameter insParamEmpId = insertCmd.CreateParameter();
+                                insParamEmpId.ParameterName = "@EmployeeID";
+                                insParamEmpId.Value = emp.EmployeeID;
+                                insertCmd.Parameters.Add(insParamEmpId);
+
+                                IDbDataParameter insParamTerrId = insertCmd.CreateParameter();
+                                insParamTerrId.ParameterName = "@TerritoryID";
+                                insParamTerrId.Value = terr.TerritoryId;
+                                insertCmd.Parameters.Add(insParamTerrId);
 
                                 // 執行新增指令
                                 insertCmd.ExecuteNonQuery();
@@ -107,17 +131,27 @@ namespace employee_data_management_system.DAL
             // 使用 @ 符號定義參數
             string query = "INSERT INTO Employees (FirstName, LastName, Photo) VALUES (@FirstName, @LastName, @Photo)";
 
-            using (SqlConnection conn = GetConnection())
+            using (IDbConnection conn = GetConnection())
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (IDbCommand cmd = conn.CreateCommand())
                 {
+                    cmd.CommandText = query;
                     // 綁定員工 ID
-                    cmd.Parameters.AddWithValue("@FirstName", emp.FirstName);
-                    cmd.Parameters.AddWithValue("@LastName", emp.LastName);
+                    IDbDataParameter paramFirstName = cmd.CreateParameter();
+                    paramFirstName.ParameterName = "@FirstName";
+                    paramFirstName.Value = emp.FirstName;
+                    cmd.Parameters.Add(paramFirstName);
+
+                    IDbDataParameter paramLastName = cmd.CreateParameter();
+                    paramLastName.ParameterName = "@LastName";
+                    paramLastName.Value = emp.LastName;
+                    cmd.Parameters.Add(paramLastName);
 
                     // 綁定照片資料，並處理照片可能為 null 的情況
                     // --- 照片參數防呆處理 ---
-                    SqlParameter photoParam = new SqlParameter("@Photo", SqlDbType.Image);
+                    IDbDataParameter photoParam = cmd.CreateParameter();
+                    photoParam.ParameterName = "@Photo";
+                    photoParam.DbType = DbType.Binary;
 
                     // 判斷：如果有照片就給照片，沒有照片就給資料庫專用的空值 (DBNull.Value)
                     if (emp.Photo != null)
@@ -151,18 +185,22 @@ namespace employee_data_management_system.DAL
         JOIN Territories ON EmployeeTerritories.TerritoryID = Territories.TerritoryID 
         WHERE EmployeeTerritories.EmployeeID = @EmployeeID";
 
-            using (SqlConnection conn = GetConnection())
+            using (IDbConnection conn = GetConnection())
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (IDbCommand cmd = conn.CreateCommand())
                 {
+                    cmd.CommandText = query;
                     // 綁定員工 ID
-                    cmd.Parameters.AddWithValue("@EmployeeID", emp.EmployeeID);
+                    IDbDataParameter paramEmpId = cmd.CreateParameter();
+                    paramEmpId.ParameterName = "@EmployeeID";
+                    paramEmpId.Value = emp.EmployeeID;
+                    cmd.Parameters.Add(paramEmpId);
 
                     conn.Open();
-
+                    int rowsAffected = cmd.ExecuteNonQuery();
                     // 執行查詢並取得資料讀取器
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
+                    using (IDataReader reader = cmd.ExecuteReader())
+                       {
                        
                         while (reader.Read())
                         {
@@ -182,12 +220,13 @@ namespace employee_data_management_system.DAL
         {
             List<Territory> territories = new List<Territory>();
             string query = "SELECT TerritoryID, TerritoryDescription FROM Territories";
-            using (SqlConnection conn = GetConnection())
+            using (IDbConnection conn = GetConnection())
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (IDbCommand cmd = conn.CreateCommand())
                 {
+                    cmd.CommandText = query;
                     conn.Open();
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    using (IDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
@@ -208,13 +247,21 @@ namespace employee_data_management_system.DAL
         INSERT INTO EmployeeTerritories (EmployeeID, TerritoryID) 
         VALUES (@EmployeeID, @TerritoryID)";
 
-            using (SqlConnection conn = GetConnection())
+            using (IDbConnection conn = GetConnection())
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (IDbCommand cmd = conn.CreateCommand())
                 {
+                    cmd.CommandText = query;
                     
-                    cmd.Parameters.AddWithValue("@EmployeeID", employeeId);
-                    cmd.Parameters.AddWithValue("@TerritoryID", territoryId);
+                    IDbDataParameter paramEmpId = cmd.CreateParameter();
+                    paramEmpId.ParameterName = "@EmployeeID";
+                    paramEmpId.Value = employeeId;
+                    cmd.Parameters.Add(paramEmpId);
+
+                    IDbDataParameter paramTerrId = cmd.CreateParameter();
+                    paramTerrId.ParameterName = "@TerritoryID";
+                    paramTerrId.Value = territoryId;
+                    cmd.Parameters.Add(paramTerrId);
 
                     conn.Open();
 
@@ -234,17 +281,26 @@ namespace employee_data_management_system.DAL
         FROM EmployeeTerritories 
         WHERE EmployeeID = @EmployeeID AND TerritoryID = @TerritoryID";
 
-            using (SqlConnection conn = GetConnection())
+            using (IDbConnection conn = GetConnection())
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (IDbCommand cmd = conn.CreateCommand())
                 {
-                    cmd.Parameters.AddWithValue("@EmployeeID", employeeId);
-                    cmd.Parameters.AddWithValue("@TerritoryID", territoryId);
+                    cmd.CommandText = query;
+
+                    IDbDataParameter paramEmpId = cmd.CreateParameter();
+                    paramEmpId.ParameterName = "@EmployeeID";
+                    paramEmpId.Value = employeeId;
+                    cmd.Parameters.Add(paramEmpId);
+
+                    IDbDataParameter paramTerrId = cmd.CreateParameter();
+                    paramTerrId.ParameterName = "@TerritoryID";
+                    paramTerrId.Value = territoryId;
+                    cmd.Parameters.Add(paramTerrId);
 
                     conn.Open();
 
                     // ExecuteScalar 會回傳查詢結果的第一列第一行，我們把它強制轉型成整數
-                    int count = (int)cmd.ExecuteScalar();
+                    int count = Convert.ToInt32(cmd.ExecuteScalar());
 
                     // 如果 count 大於 0，代表資料庫裡已經有這筆紀錄了 (回傳 true)
                     return count > 0;

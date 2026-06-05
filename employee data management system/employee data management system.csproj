@@ -31,6 +31,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Northwind.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="northwnd.ldf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
