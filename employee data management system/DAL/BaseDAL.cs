@@ -28,14 +28,12 @@ namespace employee_data_management_system.DAL
                     }
 
                     // ??? 如果程式順利走到這裡（沒有當機跳走），代表主連線是通的！
-                    // ??? 請在這裡將 _activeConnStr 指定為 primaryConnStr
                     _activeConnStr = primaryConnStr;
 
                 }
                 catch
                 {
                     // ??? 如果發生錯誤來到這裡，代表主連線掛了！
-                    // ??? 請在這裡將 _activeConnStr 指定為 fallbackConnStr
                     _activeConnStr = fallbackConnStr;
 
                 }
