@@ -58,10 +58,10 @@ namespace employee_data_management_system.BLL
             // 它會讀取指定路徑的檔案，並直接回傳成 byte[] 陣列
             return File.ReadAllBytes(filePath);
         }
-        public bool UpdateEmployee(Employee emp)
+        public bool UpdateEmployee(Employee emp, List<Territory> territories)
         {
             // 直接呼叫 DAL 層的更新方法
-            return employeeDAL.UpdateEmployee(emp);
+            return employeeDAL.UpdateEmployee(emp, territories);
         }
         public bool InsertEmployee(Employee emp)
         {

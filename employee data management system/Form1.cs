@@ -1,6 +1,7 @@
 using employee_data_management_system.BLL;
 using employee_data_management_system.models;
-
+using System.ComponentModel;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 namespace employee_data_management_system
 {
 
@@ -14,6 +15,7 @@ namespace employee_data_management_system
         private List<Employee> employees;
         private int currentIndex = 0;
         private bool _isHovering = false; // 記錄滑鼠是否懸停在照片上
+
         // --- 變數宣告區 (集中放在最上方) ---
         // --- 建構子 ---
         public Form1()
@@ -24,9 +26,11 @@ namespace employee_data_management_system
         // --- 畫面載入事件 ---
         private void Form1_Load(object sender, EventArgs e)
         {
+            dgvTerritories.AutoGenerateColumns = false;
             _isInitializing = true; // 1. 開啟狀態：程式正在初始化
 
-
+            txtFirstName.PlaceholderText = "請輸入名字 (First Name)";
+            txtLastName.PlaceholderText = "請輸入姓氏 (Last Name)";
             employees = employeeBLL.GetAllEmployees();
             if (employees != null && employees.Count > 0)
             {
@@ -38,17 +42,39 @@ namespace employee_data_management_system
             Employee currentEmp = employees[currentIndex];
 
             // 2. 透過 BLL 撈出他的責任區清單，並綁定給下方的表格
-            dgvTerritories.DataSource = employeeBLL.GetEmployeeTerritories(currentEmp);
+            var myTerritoryList = employeeBLL.GetEmployeeTerritories(currentEmp);
+            dgvTerritories.DataSource = new BindingList<Territory>(myTerritoryList);
+            // === 欄位替換手術開始 ===
 
-            // 3. 透過 BLL 撈取所有的業務區
+            // 1. 去資料庫撈出「全公司所有的責任區」，當作下拉選單的選項
             List<Territory> allTerritories = employeeBLL.GetAllTerritories();
 
-            // 4. 設定顯示與隱藏的值
-            cboTerritories.DisplayMember = "TerritoryDescription";
-            cboTerritories.ValueMember = "TerritoryID";
+            // 2. 打造一個全新的下拉選單欄位
+            DataGridViewComboBoxColumn comboCol = new DataGridViewComboBoxColumn();
+            comboCol.HeaderText = "責任區 (點擊選擇)"; // 表格上方的標題
+            comboCol.DataPropertyName = "TerritoryId";   // ✨ 核心對應：這行告訴表格，這個欄位對應到員工現有清單的 TerritoryId
 
-            // 5. 綁定給 ComboBox
-            cboTerritories.DataSource = allTerritories;
+            // 3. 設定下拉選單裡面的「選項資料」
+            comboCol.DataSource = allTerritories;
+            comboCol.DisplayMember = "TerritoryDescription"; // 表面上給人看的文字 (例如: Westboro)
+            comboCol.ValueMember = "TerritoryId";            // 骨子裡程式認的真實值 (例如: 01833)
+
+            // 4. 拔除原本自動生成的舊文字欄位 (預防重複顯示)
+            if (dgvTerritories.Columns.Contains("TerritoryId"))
+            {
+                dgvTerritories.Columns.Remove("TerritoryId");
+            }
+            if (dgvTerritories.Columns.Contains("TerritoryDescription"))
+            {
+                dgvTerritories.Columns.Remove("TerritoryDescription");
+            }
+
+            // 5. 將我們做好的下拉選單欄位，正式裝進表格中！
+            dgvTerritories.Columns.Add(comboCol);
+
+            // === 欄位替換手術結束 ===
+
+          
 
             _isInitializing = false; // 2. 狀態解除：資料綁定完畢
         }
@@ -62,7 +88,7 @@ namespace employee_data_management_system
 
             Employee emp = employees[index];
 
-           
+
             lblEmployeeInfo.Text = $"目前員工編號: {emp.EmployeeID}";
 
             // 2. 將名字分別填入左上角或畫面上的 TextBox 中
@@ -74,11 +100,20 @@ namespace employee_data_management_system
         }
 
         // --- 導覽按鈕事件 ---
-        private void btnFirst_Click(object sender, EventArgs e)
+        private void BtnFirst_Click(object sender, EventArgs e)
         {
             if (employees == null || employees.Count == 0) return;
             currentIndex = 0;
             DisplayEmployee(currentIndex);
+            Employee currentEmp = employees[currentIndex];
+            var myTerritoryList = employeeBLL.GetEmployeeTerritories(currentEmp);
+            dgvTerritories.DataSource = new BindingList<Territory>(myTerritoryList);
+
+
+
+
+
+
         }
 
         private void btnNext_Click(object sender, EventArgs e)
@@ -91,7 +126,8 @@ namespace employee_data_management_system
                 DisplayEmployee(currentIndex);
             }
             Employee currentEmp = employees[currentIndex];
-            dgvTerritories.DataSource = employeeBLL.GetEmployeeTerritories(currentEmp);
+            var myTerritoryList = employeeBLL.GetEmployeeTerritories(currentEmp);
+            dgvTerritories.DataSource = new BindingList<Territory>(myTerritoryList);
         }
 
         private void btnPrev_Click(object sender, EventArgs e)
@@ -104,7 +140,8 @@ namespace employee_data_management_system
                 DisplayEmployee(currentIndex);
             }
             Employee currentEmp = employees[currentIndex];
-            dgvTerritories.DataSource = employeeBLL.GetEmployeeTerritories(currentEmp);
+            var myTerritoryList = employeeBLL.GetEmployeeTerritories(currentEmp);
+            dgvTerritories.DataSource = new BindingList<Territory>(myTerritoryList);
         }
 
         private void btnLast_Click(object sender, EventArgs e)
@@ -115,70 +152,10 @@ namespace employee_data_management_system
             DisplayEmployee(currentIndex);
 
             Employee currentEmp = employees[currentIndex];
-            dgvTerritories.DataSource = employeeBLL.GetEmployeeTerritories(currentEmp);
+            var myTerritoryList = employeeBLL.GetEmployeeTerritories(currentEmp);
+            dgvTerritories.DataSource = new BindingList<Territory>(myTerritoryList);
         }
 
-        // --- 新增、更新與照片處理事件 ---
-        private void btnBrowse_Click_Click(object sender, EventArgs e)
-        {
-            if (employees == null || employees.Count == 0)
-            {
-                MessageBox.Show("請先選擇一位員工。");
-                return;
-            }
-
-            using (OpenFileDialog ofd = new OpenFileDialog())
-            {
-                ofd.Filter = "圖片檔案 (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp";
-                ofd.Title = "請選擇員工照片";
-
-                if (ofd.ShowDialog() == DialogResult.OK)
-                {
-                    byte[] newPhotoBytes = employeeBLL.ConvertFileToByteArray(ofd.FileName);
-                    pictureBoxEmployee.Image = employeeBLL.GetEmployeePhoto(newPhotoBytes);
-                    employees[currentIndex].Photo = newPhotoBytes;
-
-                    MessageBox.Show("照片已載入畫面，請記得點選「更新資料」來存入資料庫！");
-                }
-            }
-        }
-
-        private void btnUpdate_Click(object sender, EventArgs e)
-        {
-            if (employees == null || employees.Count == 0)
-            {
-                MessageBox.Show("目前沒有可更新的資料。");
-                return;
-            }
-
-            Employee currentEmp = employees[currentIndex];
-            bool isSuccess = employeeBLL.UpdateEmployee(currentEmp);
-
-            if (isSuccess)
-            {
-                MessageBox.Show("新員工資料已成功存入資料庫！");
-
-                // 1. 重新從資料庫  撈取最新名單（包含剛新增的那位）
-                employees = employeeBLL.GetAllEmployees();
-
-                // 2. 將游標  移到最後一筆（剛新增的員工）
-                currentIndex = employees.Count - 1;
-
-                // 3. 更新畫面上的文字框與照片
-                DisplayEmployee(currentIndex);
-
-                // 4. 重新撈取該新員工的責任區（目前是空的），更新表格 
-                Employee _currentEmp = employees[currentIndex];
-                dgvTerritories.DataSource = employeeBLL.GetEmployeeTerritories(currentEmp);
-
-                // 5. 啟用責任區下拉選單 ，讓使用者開始指派
-                cboTerritories.Enabled = true;
-            }
-            else
-            {
-                MessageBox.Show("更新失敗，請稍後再試。");
-            }
-        }
 
         private void btnAddNew_Click_Click(object sender, EventArgs e)
         {
@@ -189,15 +166,13 @@ namespace employee_data_management_system
             txtLastName.Text = "";
             pictureBoxEmployee.Image = null;
             dgvTerritories.DataSource = null;
-            cboTerritories.SelectedIndex = -1;
 
-            cboTerritories.Enabled = false; // 禁止選擇責任區，直到新增員工成功
-
-            MessageBox.Show("請在欄位中輸入新員工姓名，點擊「瀏覽...」選擇照片，最後按下「新增存檔」。");
+            MessageBox.Show("請在欄位中輸入新員工姓名，圖片欄選擇照片，最後按下「存檔」。");
         }
 
         private void btnSaveNew_Click_Click(object sender, EventArgs e)
         {
+            DataGridViewComboBoxColumn comboCol = new DataGridViewComboBoxColumn();
             // 萬能存檔鍵！
             if (_isAddingNew == true)
             {
@@ -218,8 +193,9 @@ namespace employee_data_management_system
                     DisplayEmployee(currentIndex);
 
                     Employee currentEmp = employees[currentIndex];
-                    dgvTerritories.DataSource = employeeBLL.GetEmployeeTerritories(currentEmp);
-                    cboTerritories.Enabled = true;
+                    var myTerritoryList = employeeBLL.GetEmployeeTerritories(currentEmp);
+                    dgvTerritories.DataSource = new BindingList<Territory>(myTerritoryList);
+                    comboCol.ReadOnly = false;
                 }
                 else
                 {
@@ -232,13 +208,27 @@ namespace employee_data_management_system
                 Employee currentEmp = employees[currentIndex];
                 currentEmp.FirstName = txtFirstName.Text.Trim();
                 currentEmp.LastName = txtLastName.Text.Trim();
+                // 1. 從表格中把資料拿出來，並明確告訴 C# 說：「這是一包 BindingList<Territory>」
+                BindingList<Territory> currentBindingList = (BindingList<Territory>)dgvTerritories.DataSource;
+
+                // 2. 利用 .ToList() 將它轉換回 BLL 需要的標準 List
+                List<Territory> territoriesToSave = currentBindingList.ToList();
+
+                // 加入檢測：確認清單中是否有重複的責任區 (TerritoryId)
+                bool hasDuplicates = territoriesToSave.GroupBy(t => t.TerritoryId).Any(g => g.Count() > 1);
+                if (hasDuplicates)
+                {
+                    // 若有重複，阻擋存檔並提示用戶       
+                    MessageBox.Show("無法儲存！您新增了已存在的責任區，請移除重複的項目再試一次。", "重複選擇", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return; // 終止目前的存檔動作
+                }
 
                 if (_tempPhotoBytes != null)
                 {
                     currentEmp.Photo = _tempPhotoBytes;
                 }
 
-                bool isSuccess = employeeBLL.UpdateEmployee(currentEmp);
+                bool isSuccess = employeeBLL.UpdateEmployee(currentEmp, territoriesToSave);
 
                 if (isSuccess)
                 {
@@ -254,33 +244,7 @@ namespace employee_data_management_system
             }
         }
 
-        // --- 責任區下拉選單變更事件 ---
-        private void cboTerritories_SelectedValueChanged(object sender, EventArgs e)
-        {
-            if (_isInitializing == true)
-            {
-                return;
-            }
-
-            if (cboTerritories.SelectedValue == null) return;
-
-            Employee currentEmp = employees[currentIndex];
-            string selectedTerritoryId = cboTerritories.SelectedValue.ToString();
-
-            if (employeeBLL.CheckTerritoryExists(currentEmp.EmployeeID, selectedTerritoryId))
-            {
-                MessageBox.Show("該員工已擁有此責任區。");
-                return;
-            }
-
-            bool isSuccess = employeeBLL.InsertEmployeeTerritory(currentEmp.EmployeeID, selectedTerritoryId);
-
-            if (isSuccess)
-            {
-                MessageBox.Show("責任區新增成功！");
-                dgvTerritories.DataSource = employeeBLL.GetEmployeeTerritories(currentEmp);
-            }
-        }
+       
 
         private void pictureBoxEmployee_Click(object sender, EventArgs e)
         {

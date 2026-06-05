@@ -40,7 +40,7 @@ namespace employee_data_management_system.DAL
             return employees;
 
         }
-        public bool UpdateEmployee(Employee emp)
+        public bool UpdateEmployee(Employee emp, List<Territory> territories)
         {
             // 使用 @ 符號定義參數
             string query = "UPDATE Employees SET Photo = @Photo, FirstName = @FirstName, LastName = @LastName WHERE EmployeeID = @EmployeeID";
@@ -53,7 +53,7 @@ namespace employee_data_management_system.DAL
                     cmd.Parameters.AddWithValue("@EmployeeID", emp.EmployeeID);
                     cmd.Parameters.AddWithValue("@FirstName", emp.FirstName);
                     cmd.Parameters.AddWithValue("@LastName", emp.LastName);
-
+                    
                     // 綁定照片資料，並處理照片可能為 null 的情況
                     // --- 照片參數防呆處理 ---
                     // 明確宣告這是一個 Image (二進位) 欄位，不要讓 C# 亂猜
@@ -74,6 +74,30 @@ namespace employee_data_management_system.DAL
                     conn.Open();
                     // ExecuteNonQuery 會回傳受影響的資料列數，大於 0 代表更新成功
                     int rowsAffected = cmd.ExecuteNonQuery();
+                    if (rowsAffected > 0 && territories != null)
+                    {
+                        // 準備安全新增的 SQL 語法
+                        string insertTerritoryQuery = @"
+            IF NOT EXISTS (SELECT 1 FROM EmployeeTerritories WHERE EmployeeID = @EmployeeID AND TerritoryID = @TerritoryID)
+            BEGIN
+                INSERT INTO EmployeeTerritories (EmployeeID, TerritoryID) VALUES (@EmployeeID, @TerritoryID)
+            END";
+
+                        // 走訪畫面傳進來的每一個責任區
+                        foreach (var terr in territories)
+                        {
+                            using (SqlCommand insertCmd = new SqlCommand(insertTerritoryQuery, conn))
+                            {
+                                // ??? 請在這裡補上兩行程式碼，將資料綁定到 @EmployeeID 與 @TerritoryID 參數上
+                                insertCmd.Parameters.AddWithValue("@EmployeeID", emp.EmployeeID);
+                                insertCmd.Parameters.AddWithValue("@TerritoryID", terr.TerritoryId);
+
+                                // 執行新增指令
+                                insertCmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+
                     return rowsAffected > 0;
                 }
             }
@@ -93,7 +117,6 @@ namespace employee_data_management_system.DAL
 
                     // 綁定照片資料，並處理照片可能為 null 的情況
                     // --- 照片參數防呆處理 ---
-                    // 明確宣告這是一個 Image (二進位) 欄位，不要讓 C# 亂猜
                     SqlParameter photoParam = new SqlParameter("@Photo", SqlDbType.Image);
 
                     // 判斷：如果有照片就給照片，沒有照片就給資料庫專用的空值 (DBNull.Value)

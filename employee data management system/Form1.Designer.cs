@@ -39,7 +39,6 @@
             txtFirstName = new TextBox();
             txtLastName = new TextBox();
             dgvTerritories = new DataGridView();
-            cboTerritories = new ComboBox();
             ((System.ComponentModel.ISupportInitialize)pictureBoxEmployee).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dgvTerritories).BeginInit();
             SuspendLayout();
@@ -47,30 +46,31 @@
             // lblEmployeeInfo
             // 
             lblEmployeeInfo.AutoSize = true;
-            lblEmployeeInfo.Location = new Point(71, 42);
-            lblEmployeeInfo.Margin = new Padding(2, 0, 2, 0);
+            lblEmployeeInfo.Font = new Font("Segoe UI", 28F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblEmployeeInfo.ForeColor = SystemColors.ControlLight;
+            lblEmployeeInfo.Location = new Point(74, 44);
             lblEmployeeInfo.Name = "lblEmployeeInfo";
-            lblEmployeeInfo.Size = new Size(38, 15);
+            lblEmployeeInfo.Size = new Size(180, 74);
             lblEmployeeInfo.TabIndex = 0;
             lblEmployeeInfo.Text = "label1";
             // 
             // btnFirst
             // 
-            btnFirst.Location = new Point(34, 277);
-            btnFirst.Margin = new Padding(2, 2, 2, 2);
+            btnFirst.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnFirst.Location = new Point(418, 368);
             btnFirst.Name = "btnFirst";
-            btnFirst.Size = new Size(78, 20);
+            btnFirst.Size = new Size(148, 127);
             btnFirst.TabIndex = 1;
             btnFirst.Text = "第一筆";
             btnFirst.UseVisualStyleBackColor = true;
-            btnFirst.Click += btnFirst_Click;
+            btnFirst.Click += BtnFirst_Click;
             // 
             // btnNext
             // 
-            btnNext.Location = new Point(154, 277);
-            btnNext.Margin = new Padding(2, 2, 2, 2);
+            btnNext.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnNext.Location = new Point(224, 368);
             btnNext.Name = "btnNext";
-            btnNext.Size = new Size(78, 20);
+            btnNext.Size = new Size(148, 127);
             btnNext.TabIndex = 2;
             btnNext.Text = "下一筆";
             btnNext.UseVisualStyleBackColor = true;
@@ -78,10 +78,10 @@
             // 
             // btnPrev
             // 
-            btnPrev.Location = new Point(274, 277);
-            btnPrev.Margin = new Padding(2, 2, 2, 2);
+            btnPrev.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnPrev.Location = new Point(73, 368);
             btnPrev.Name = "btnPrev";
-            btnPrev.Size = new Size(78, 20);
+            btnPrev.Size = new Size(148, 127);
             btnPrev.TabIndex = 3;
             btnPrev.Text = "上一筆";
             btnPrev.UseVisualStyleBackColor = true;
@@ -89,10 +89,10 @@
             // 
             // btnLast
             // 
-            btnLast.Location = new Point(400, 277);
-            btnLast.Margin = new Padding(2, 2, 2, 2);
+            btnLast.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnLast.Location = new Point(570, 368);
             btnLast.Name = "btnLast";
-            btnLast.Size = new Size(78, 20);
+            btnLast.Size = new Size(150, 129);
             btnLast.TabIndex = 4;
             btnLast.Text = "最後一筆";
             btnLast.UseVisualStyleBackColor = true;
@@ -101,10 +101,9 @@
             // pictureBoxEmployee
             // 
             pictureBoxEmployee.BackColor = SystemColors.AppWorkspace;
-            pictureBoxEmployee.Location = new Point(732, 42);
-            pictureBoxEmployee.Margin = new Padding(2, 2, 2, 2);
+            pictureBoxEmployee.Location = new Point(968, 44);
             pictureBoxEmployee.Name = "pictureBoxEmployee";
-            pictureBoxEmployee.Size = new Size(105, 150);
+            pictureBoxEmployee.Size = new Size(228, 276);
             pictureBoxEmployee.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxEmployee.TabIndex = 5;
             pictureBoxEmployee.TabStop = false;
@@ -115,10 +114,10 @@
             // 
             // btnAddNew_Click
             // 
-            btnAddNew_Click.Location = new Point(520, 277);
-            btnAddNew_Click.Margin = new Padding(2, 2, 2, 2);
+            btnAddNew_Click.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnAddNew_Click.Location = new Point(778, 366);
             btnAddNew_Click.Name = "btnAddNew_Click";
-            btnAddNew_Click.Size = new Size(78, 20);
+            btnAddNew_Click.Size = new Size(148, 127);
             btnAddNew_Click.TabIndex = 8;
             btnAddNew_Click.Text = "新增空白";
             btnAddNew_Click.UseVisualStyleBackColor = true;
@@ -126,57 +125,51 @@
             // 
             // btnSaveNew_Click
             // 
-            btnSaveNew_Click.Location = new Point(640, 277);
-            btnSaveNew_Click.Margin = new Padding(2, 2, 2, 2);
+            btnSaveNew_Click.Font = new Font("Segoe UI", 20F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnSaveNew_Click.Location = new Point(968, 366);
             btnSaveNew_Click.Name = "btnSaveNew_Click";
-            btnSaveNew_Click.Size = new Size(78, 20);
+            btnSaveNew_Click.Size = new Size(228, 129);
             btnSaveNew_Click.TabIndex = 9;
-            btnSaveNew_Click.Text = "新增存檔";
+            btnSaveNew_Click.Text = "存檔";
             btnSaveNew_Click.UseVisualStyleBackColor = true;
             btnSaveNew_Click.Click += btnSaveNew_Click_Click;
             // 
             // txtFirstName
             // 
-            txtFirstName.Location = new Point(182, 40);
-            txtFirstName.Margin = new Padding(2, 2, 2, 2);
+            txtFirstName.BackColor = SystemColors.GrayText;
+            txtFirstName.Font = new Font("Segoe UI", 24F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            txtFirstName.Location = new Point(73, 249);
             txtFirstName.Name = "txtFirstName";
-            txtFirstName.Size = new Size(106, 23);
+            txtFirstName.Size = new Size(299, 71);
             txtFirstName.TabIndex = 10;
             // 
             // txtLastName
             // 
-            txtLastName.Location = new Point(332, 40);
-            txtLastName.Margin = new Padding(2, 2, 2, 2);
+            txtLastName.BackColor = SystemColors.GrayText;
+            txtLastName.Font = new Font("Segoe UI", 24F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            txtLastName.Location = new Point(418, 249);
             txtLastName.Name = "txtLastName";
-            txtLastName.Size = new Size(106, 23);
+            txtLastName.Size = new Size(508, 71);
             txtLastName.TabIndex = 11;
             // 
             // dgvTerritories
             // 
-            dgvTerritories.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvTerritories.Location = new Point(64, 370);
-            dgvTerritories.Margin = new Padding(2, 2, 2, 2);
+            dgvTerritories.AllowUserToOrderColumns = true;
+            dgvTerritories.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvTerritories.BackgroundColor = SystemColors.ControlLightLight;
+            dgvTerritories.ColumnHeadersHeight = 34;
+            dgvTerritories.Location = new Point(74, 519);
             dgvTerritories.Name = "dgvTerritories";
             dgvTerritories.RowHeadersWidth = 62;
-            dgvTerritories.Size = new Size(773, 135);
+            dgvTerritories.Size = new Size(1122, 331);
             dgvTerritories.TabIndex = 12;
-            // 
-            // cboTerritories
-            // 
-            cboTerritories.FormattingEnabled = true;
-            cboTerritories.Location = new Point(64, 333);
-            cboTerritories.Margin = new Padding(2, 2, 2, 2);
-            cboTerritories.Name = "cboTerritories";
-            cboTerritories.Size = new Size(774, 23);
-            cboTerritories.TabIndex = 13;
-            cboTerritories.SelectedValueChanged += cboTerritories_SelectedValueChanged;
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(893, 533);
-            Controls.Add(cboTerritories);
+            BackColor = SystemColors.MenuText;
+            ClientSize = new Size(1276, 888);
             Controls.Add(dgvTerritories);
             Controls.Add(txtLastName);
             Controls.Add(txtFirstName);
@@ -188,7 +181,6 @@
             Controls.Add(btnNext);
             Controls.Add(btnFirst);
             Controls.Add(lblEmployeeInfo);
-            Margin = new Padding(2, 2, 2, 2);
             Name = "Form1";
             Text = "員工資料管理系統";
             Load += Form1_Load;
@@ -211,6 +203,5 @@
         private TextBox txtFirstName;
         private TextBox txtLastName;
         private DataGridView dgvTerritories;
-        private ComboBox cboTerritories;
     }
 }

@@ -11,7 +11,6 @@ namespace employee_data_management_system.DAL
         // 2. 備用連線：本機 bin 資料夾 
         private readonly string fallbackConnStr = "Server=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\\Northwnd.mdf;Integrated Security=True;";
 
-        // 3. 記憶卡：記住目前「活著」的是哪一條
         private static string _activeConnStr = null;
 
         protected SqlConnection GetConnection()
