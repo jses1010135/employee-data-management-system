@@ -113,7 +113,6 @@ namespace employee_data_management_system
 
 
 
-
         }
 
         private void btnNext_Click(object sender, EventArgs e)
@@ -188,12 +187,15 @@ namespace employee_data_management_system
                 {
                     MessageBox.Show("新員工資料已成功存入資料庫！");
 
+                    _isAddingNew = false; // <-- 請手動重設此變數
+                    _tempPhotoBytes = null; // 清空照片暫存
+
                     employees = employeeBLL.GetAllEmployees();
                     currentIndex = employees.Count - 1;
                     DisplayEmployee(currentIndex);
 
                     Employee currentEmp = employees[currentIndex];
-                    var myTerritoryList = employeeBLL.GetEmployeeTerritories(currentEmp);
+                    var myTerritoryList = employeeBLL.GetEmployeeTerritories(currentEmp); // 對於剛新增的員工，這可能為空
                     dgvTerritories.DataSource = new BindingList<Territory>(myTerritoryList);
                     comboCol.ReadOnly = false;
                 }
@@ -227,13 +229,12 @@ namespace employee_data_management_system
                 {
                     currentEmp.Photo = _tempPhotoBytes;
                 }
-
                 bool isSuccess = employeeBLL.UpdateEmployee(currentEmp, territoriesToSave);
 
                 if (isSuccess)
                 {
                     MessageBox.Show("員工資料更新成功！");
-
+                    _tempPhotoBytes = null; // ✅ 清空照片暫存，避免污染下一筆資料
                     employees = employeeBLL.GetAllEmployees();
                     DisplayEmployee(currentIndex);
                 }
